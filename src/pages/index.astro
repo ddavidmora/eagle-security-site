@@ -1,5 +1,78 @@
 ---
+import { siteContent } from '../data/site-content';
 
+const themePresets = {
+	coastal: {
+		ink: '#0d1a2b',
+		slate: '#334155',
+		primary: '#1e9ec9',
+		primaryDeep: '#0e6b8e',
+		accent: '#ff9d2f',
+		card: 'rgba(255, 255, 255, 0.9)',
+		backgroundTop: '#f6fbff',
+		backgroundBottom: '#f7fcff',
+		glowPrimary: 'rgba(30, 158, 201, 0.28)',
+		glowAccent: 'rgba(255, 157, 47, 0.2)',
+	},
+	metro: {
+		ink: '#131827',
+		slate: '#374151',
+		primary: '#0f766e',
+		primaryDeep: '#115e59',
+		accent: '#fb923c',
+		card: 'rgba(255, 255, 255, 0.92)',
+		backgroundTop: '#f3f7fa',
+		backgroundBottom: '#ecf4f8',
+		glowPrimary: 'rgba(15, 118, 110, 0.22)',
+		glowAccent: 'rgba(251, 146, 60, 0.18)',
+	},
+	sunrise: {
+		ink: '#23181a',
+		slate: '#4b3a3f',
+		primary: '#d9480f',
+		primaryDeep: '#9a3412',
+		accent: '#f59e0b',
+		card: 'rgba(255, 252, 248, 0.9)',
+		backgroundTop: '#fff7ed',
+		backgroundBottom: '#fffaf1',
+		glowPrimary: 'rgba(217, 72, 15, 0.2)',
+		glowAccent: 'rgba(245, 158, 11, 0.2)',
+	},
+};
+
+const selectedPreset =
+	themePresets[siteContent.design.preset as keyof typeof themePresets] ??
+	themePresets.coastal;
+const overrides = siteContent.design.overrides;
+const theme = {
+	ink: overrides.ink || selectedPreset.ink,
+	slate: overrides.slate || selectedPreset.slate,
+	primary: overrides.primary || selectedPreset.primary,
+	primaryDeep: overrides.primaryDeep || selectedPreset.primaryDeep,
+	accent: overrides.accent || selectedPreset.accent,
+	card: overrides.card || selectedPreset.card,
+	backgroundTop: overrides.backgroundTop || selectedPreset.backgroundTop,
+	backgroundBottom: overrides.backgroundBottom || selectedPreset.backgroundBottom,
+	glowPrimary: overrides.glowPrimary || selectedPreset.glowPrimary,
+	glowAccent: overrides.glowAccent || selectedPreset.glowAccent,
+	textOnCard: (overrides as any).textOnCard || overrides.ink || selectedPreset.ink,
+};
+
+const themeVars = [
+	`--ink:${theme.ink}`,
+	`--slate:${theme.slate}`,
+	`--primary:${theme.primary}`,
+	`--primary-deep:${theme.primaryDeep}`,
+	`--accent:${theme.accent}`,
+	`--card:${theme.card}`,
+	`--background-top:${theme.backgroundTop}`,
+	`--background-bottom:${theme.backgroundBottom}`,
+	`--glow-primary:${theme.glowPrimary}`,
+	`--glow-accent:${theme.glowAccent}`,
+	`--text-on-card:${theme.textOnCard}`,
+].join(';');
+
+const widgets = siteContent.widgets;
 ---
 
 <html lang="en">
@@ -9,9 +82,399 @@
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+		<title>{siteContent.meta.title}</title>
+		<meta name="description" content={siteContent.meta.description} />
+		<style>
+			:root {
+				--ink: #0d1a2b;
+				--slate: #334155;
+				--primary: #1e9ec9;
+				--primary-deep: #0e6b8e;
+				--accent: #ff9d2f;
+				--white: #ffffff;
+				--card: rgba(255, 255, 255, 0.9);
+				--text-on-card: var(--ink);
+				--background-top: #f6fbff;
+				--background-bottom: #f7fcff;
+				--glow-primary: rgba(30, 158, 201, 0.28);
+				--glow-accent: rgba(255, 157, 47, 0.2);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: 'Manrope', sans-serif;
+				color: var(--ink);
+				background:
+					radial-gradient(1200px 500px at 90% -10%, var(--glow-primary), transparent 55%),
+					radial-gradient(900px 450px at 10% 10%, var(--glow-accent), transparent 55%),
+					linear-gradient(180deg, var(--background-top) 0%, color-mix(in srgb, var(--background-top) 65%, white) 32%, var(--background-bottom) 100%);
+				min-height: 100svh;
+			}
+
+			main {
+				width: min(1100px, 92vw);
+				margin: 0 auto;
+				padding: 1.5rem 0 3rem;
+			}
+
+			header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 0.75rem 0;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 0.7rem;
+				font-family: 'Space Grotesk', sans-serif;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			.badge {
+				width: 2.1rem;
+				height: 2.1rem;
+				border-radius: 0.6rem;
+				background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+				display: grid;
+				place-items: center;
+				color: var(--white);
+				font-size: 1.2rem;
+			}
+
+			.hero {
+				display: grid;
+				grid-template-columns: 1.2fr 1fr;
+				gap: 1.2rem;
+				align-items: stretch;
+				margin-top: 1rem;
+			}
+
+			.panel {
+				background: var(--card);
+				border: 1px solid rgba(14, 107, 142, 0.16);
+				border-radius: 1.15rem;
+				padding: 1.4rem;
+				backdrop-filter: blur(6px);
+				box-shadow: 0 12px 32px rgba(14, 37, 64, 0.08);
+				color: var(--text-on-card);
+			}
+
+			h1,
+			h2 {
+				font-family: 'Space Grotesk', sans-serif;
+				line-height: 1.1;
+				margin: 0;
+			}
+
+			h1 {
+				font-size: clamp(2rem, 4.2vw, 3.35rem);
+			}
+
+			h2 {
+				font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+				margin-bottom: 0.7rem;
+			}
+
+			.lead {
+				font-size: 1.03rem;
+				line-height: 1.7;
+				color: var(--slate);
+				margin: 1rem 0 1.25rem;
+			}
+
+			.pills {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.55rem;
+			}
+
+			.pill {
+				display: inline-flex;
+				padding: 0.42rem 0.72rem;
+				font-size: 0.84rem;
+				font-weight: 700;
+				color: var(--primary-deep);
+				background: color-mix(in srgb, var(--primary) 12%, white);
+				border-radius: 999px;
+			}
+
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 0.8rem;
+				margin-top: 1rem;
+			}
+
+			.kpi {
+				padding: 0.8rem;
+				border-radius: 0.85rem;
+				background: #f8fcff;
+				border: 1px solid rgba(51, 65, 85, 0.13);
+			}
+
+			.kpi strong {
+				display: block;
+				font-family: 'Space Grotesk', sans-serif;
+				font-size: 1.2rem;
+			}
+
+			.kpi span {
+				font-size: 0.85rem;
+				color: var(--slate);
+			}
+
+			form {
+				display: grid;
+				gap: 0.72rem;
+			}
+
+			.row {
+				display: grid;
+				gap: 0.72rem;
+				grid-template-columns: 1fr 1fr;
+			}
+
+			label {
+				font-size: 0.83rem;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				color: var(--slate);
+				display: grid;
+				gap: 0.32rem;
+			}
+
+			input,
+			textarea {
+				font: inherit;
+				padding: 0.75rem 0.78rem;
+				border: 1px solid rgba(51, 65, 85, 0.2);
+				border-radius: 0.72rem;
+					background: rgba(255, 255, 255, 0.08);
+					color: var(--text-on-card);
+			}
+
+			textarea {
+				min-height: 120px;
+				resize: vertical;
+			}
+
+			button {
+				border: none;
+				padding: 0.82rem 1rem;
+				border-radius: 0.72rem;
+				font: 700 0.95rem 'Space Grotesk', sans-serif;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				color: var(--white);
+				background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+				transition: transform 0.2s ease, box-shadow 0.2s ease;
+			}
+
+			button:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 8px 18px color-mix(in srgb, var(--primary-deep) 26%, transparent);
+			}
+
+			button:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+				transform: none;
+			}
+
+			.status {
+				min-height: 1.4rem;
+				font-size: 0.88rem;
+				font-weight: 600;
+				color: var(--primary-deep);
+			}
+
+			.footer-note {
+				margin-top: 1rem;
+				font-size: 0.8rem;
+				color: var(--slate);
+			}
+
+			.hidden-field {
+				position: absolute;
+				left: -9999px;
+				opacity: 0;
+				pointer-events: none;
+			}
+
+			@keyframes rise {
+				from {
+					opacity: 0;
+					transform: translateY(10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.panel {
+				animation: rise 0.45s ease both;
+			}
+
+			.panel.no-animation {
+				animation: none;
+			}
+
+			.hero .panel:nth-child(2) {
+				animation-delay: 0.1s;
+			}
+
+			@media (max-width: 900px) {
+				.hero {
+					grid-template-columns: 1fr;
+				}
+
+				.grid {
+					grid-template-columns: 1fr;
+				}
+
+				.row {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body style={themeVars}>
+		<main>
+			<header>
+				<div class="brand">
+					{widgets.showBadge && <span class="badge">{siteContent.brand.badge}</span>}
+					<span>{siteContent.brand.name}</span>
+				</div>
+			</header>
+
+			<section class="hero">
+				<article class={`panel ${widgets.useCardAnimation ? '' : 'no-animation'}`}>
+					<h1>{siteContent.hero.headline}</h1>
+					<p class="lead">{siteContent.hero.lead}</p>
+					{widgets.showFeaturePills && (
+						<div class="pills">
+							{siteContent.hero.pills.map((pill) => (
+								<span class="pill">{pill}</span>
+							))}
+						</div>
+					)}
+					{widgets.showMetrics && (
+						<div class="grid">
+							{siteContent.hero.metrics.map((metric) => (
+								<div class="kpi">
+									<strong>{metric.value}</strong>
+									<span>{metric.label}</span>
+								</div>
+							))}
+						</div>
+					)}
+				</article>
+
+				<aside class={`panel ${widgets.useCardAnimation ? '' : 'no-animation'}`}>
+					<h2>{siteContent.form.title}</h2>
+					<form id="inquiry-form" method="post" action="/api/inquiry">
+						<div class="row">
+							<label>
+								Name
+								<input name="name" required minlength="2" maxlength="80" />
+							</label>
+							<label>
+								Email
+								<input type="email" name="email" required maxlength="120" />
+							</label>
+						</div>
+
+						<div class="row">
+							<label>
+								Phone
+								<input name="phone" maxlength="30" />
+							</label>
+							<label>
+								Property / Community
+								<input name="property" maxlength="120" />
+							</label>
+						</div>
+
+						<label>
+							{siteContent.form.messageLabel}
+							<textarea
+								name="message"
+								required
+								minlength="20"
+								maxlength="2000"
+								placeholder={siteContent.form.messagePlaceholder}
+							></textarea>
+						</label>
+
+						<input
+							type="text"
+							name="company"
+							class="hidden-field"
+							tabindex="-1"
+							autocomplete="off"
+						/>
+
+						<button type="submit">{siteContent.form.submitLabel}</button>
+						<p id="form-status" class="status" aria-live="polite"></p>
+					</form>
+					<p class="footer-note">{siteContent.form.footerNote}</p>
+				</aside>
+			</section>
+		</main>
+
+		<script define:vars={{ statusMessages: siteContent.form.status }}>
+			const form = document.querySelector('#inquiry-form');
+			const status = document.querySelector('#form-status');
+			const submit = form?.querySelector('button[type="submit"]');
+
+			if (form && status && submit) {
+				form.addEventListener('submit', async (event) => {
+					event.preventDefault();
+					status.textContent = statusMessages.sending;
+					submit.disabled = true;
+
+					try {
+						const response = await fetch(form.action, {
+							method: 'POST',
+							body: new FormData(form),
+						});
+
+						const payload = await response.json().catch(() => ({}));
+
+						if (!response.ok) {
+							throw new Error(
+								payload?.error || 'Unable to submit inquiry right now.'
+							);
+						}
+
+						status.textContent = statusMessages.success;
+						form.reset();
+					} catch (error) {
+						status.textContent =
+							error instanceof Error
+								? error.message
+								: statusMessages.errorFallback;
+					} finally {
+						submit.disabled = false;
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
