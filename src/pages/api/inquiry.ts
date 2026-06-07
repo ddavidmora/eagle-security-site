@@ -57,7 +57,8 @@ export const POST: APIRoute = async ({ request }) => {
 	}
 
 	const apiKey = import.meta.env.RESEND_API_KEY;
-	const to = import.meta.env.INQUIRY_TO_EMAIL;
+	// Default to your requested inbox if the environment variable isn't set
+	const to = import.meta.env.INQUIRY_TO_EMAIL || 'info@eaglesecurityguardservices.com';
 	const from =
 		import.meta.env.INQUIRY_FROM_EMAIL || 'Apartment Security <onboarding@resend.dev>';
 
