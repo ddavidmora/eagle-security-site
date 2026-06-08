@@ -6,3 +6,11 @@ publish = "dist"
 [dev]
 command = "npm run dev"
 port = 4321
+
+# Exclude /api/* from form detection (Netlify's built-in form handler)
+# This allows custom API endpoints to handle POST requests without CSRF blocking
+[[redirects]]
+from = "/api/*"
+to = "/:splat"
+status = 200
+force = true
