@@ -97,6 +97,13 @@ export const POST: APIRoute = async ({ request }) => {
 	if (!emailResponse.ok) {
 		const details = await emailResponse.text();
 		console.error('Resend error:', details);
+		// If DEBUG_EMAIL_ERRORS is enabled, include the provider details in the response
+		if (import.meta.env.DEBUG_EMAIL_ERRORS === 'true') {
+			return jsonResponse(502, {
+				error: 'Unable to send your inquiry right now. Please try again soon.',
+				details: String(details),
+			});
+		}
 		return jsonResponse(502, {
 			error: 'Unable to send your inquiry right now. Please try again soon.',
 		});
