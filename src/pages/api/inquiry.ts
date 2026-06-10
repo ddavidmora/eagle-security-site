@@ -2,8 +2,8 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-function textValue(formData: FormData, key: string) {
-	const value = formData.get(key);
+function textValue(source: Record<string, unknown>, key: string) {
+	const value = source[key];
 	return typeof value === 'string' ? value.trim() : '';
 }
 
@@ -21,14 +21,17 @@ function jsonResponse(status: number, body: Record<string, string | boolean>) {
 }
 
 export const POST: APIRoute = async ({ request }) => {
-	const formData = await request.formData();
+	const contentType = request.headers.get('content-type') || '';
+	const rawBody = contentType.includes('application/json')
+		? await request.json().catch(() => ({}))
+		: Object.fromEntries((await request.formData()).entries());
 
-	const name = textValue(formData, 'name');
-	const email = textValue(formData, 'email');
-	const phone = textValue(formData, 'phone');
-	const property = textValue(formData, 'property');
-	const message = textValue(formData, 'message');
-	const honeypot = textValue(formData, 'company');
+	const name = textValue(rawBody, 'name');
+	const email = textValue(rawBody, 'email');
+	const phone = textValue(rawBody, 'phone');
+	const property = textValue(rawBody, 'property');
+	const message = textValue(rawBody, 'message');
+	const honeypot = textValue(rawBody, 'company');
 
 	if (honeypot) {
 		return jsonResponse(200, { success: true });
@@ -79,30 +82,46 @@ export const POST: APIRoute = async ({ request }) => {
 		message,
 	];
 
-	const emailResponse = await fetch('https://api.resend.com/emails', {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${apiKey}`,
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			from,
-			to: [to],
-			subject: `New Security Inquiry: ${name}`,
-			reply_to: email,
-			text: lines.join('\n'),
-		}),
-	});
+const emailAbortController = new AbortController();
+	const emailTimeout = setTimeout(() => emailAbortController.abort(), 10000);
 
-	if (!emailResponse.ok) {
-		const details = await emailResponse.text();
-		console.error('Resend error:', details);
-		// Temporarily always include details for debugging
-		return jsonResponse(502, {
-			error: 'Unable to send your inquiry right now. Please try again soon.',
-			details: String(details),
+	try {
+		const emailResponse = await fetch('https://api.resend.com/emails', {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${apiKey}`,
+				'Content-Type': 'application/json',
+			},
+			signal: emailAbortController.signal,
+			body: JSON.stringify({
+				from,
+				to: [to],
+				subject: `New Security Inquiry: ${name}`,
+				reply_to: email,
+				text: lines.join('\n'),
+			}),
 		});
-	}
 
-	return jsonResponse(200, { success: true });
+		clearTimeout(emailTimeout);
+
+		if (!emailResponse.ok) {
+			const details = await emailResponse.text();
+			console.error('Resend API Error:', details);
+			return jsonResponse(502, {
+				error: 'Unable to send your inquiry right now. Please try again soon.',
+			});
+		}
+
+		return jsonResponse(200, { success: true });
+
+	} catch (error) {
+		clearTimeout(emailTimeout);
+		console.error('Function execution error:', error);
+		
+		if (error instanceof Error && error.name === 'AbortError') {
+			return jsonResponse(504, { error: 'The connection to the email server timed out.' });
+		}
+		
+		return jsonResponse(500, { error: 'An unexpected network error occurred.' });
+	}
 };
